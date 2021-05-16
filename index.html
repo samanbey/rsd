@@ -618,7 +618,7 @@
 		
 	</head>
 	
-	<body onload="layerOrder()">
+	<body>
 
 		<!--Címsáv-->
 		<nav id = "sav">Soroksári-Duna</nav>
@@ -804,8 +804,6 @@
 			//WmsGetFeatureInfo
 			map.addHandler('wmsgfi', L.WmsGetFeatureInfo);
 			
-			//var kikotohely;
-			
 			//Rétegkezelő
 			var alap = {'Térkép': gl, 'Műhold': googleSat};
 			//var fedveny = {'Kiötőhelyek': kikotohely};
@@ -857,8 +855,9 @@
 			});
 
 			//geoJSON réteg: Kikötőhelyek
+			var kikotohely;
 			fetch('layers/rsdKikotohelyek.geojson').then(r=>r.json()).then(function(data) {
-			var kikotohely = L.geoJSON(data, { pane: 'kikotohelypane',
+			kikotohely = L.geoJSON(data, { pane: 'kikotohelypane',
 				style: function(feature) {
 					switch (feature.properties.tipus) {
 						case 'steg': return {color: "#CC99FF", fillOpacity: 1, opacity: 1,};
