@@ -17,6 +17,12 @@
 		<script src="https://cdn.maptiler.com/mapbox-gl-leaflet/latest/leaflet-mapbox-gl.js"></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" />
 		<link rel="stylesheet" href="https://cdn.maptiler.com/mapbox-gl-js/v1.5.1/mapbox-gl.css" />
+
+		<!--Kereséshez-->
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js'></script>
+
+		<!--GeoJSON-->
+		<script type="text/javascript" src="layers/rsdPoi.geojson"></script>
 		
 		<!--Betűtípusok-->
 		<link rel="preconnect" href="https://fonts.gstatic.com">
@@ -31,10 +37,14 @@
 		<style>
 
 			.leaflet-control-layers {
-				background: white;
+				box-shadow: 0px 0px 15px #9c9c9c2d;
+				background-color: #ffffffbe;
+				backdrop-filter: blur(30px);
+				transition: 0.1s linear;
+				cursor: text;
 				border-radius: 25px;
 				border: none;
-				box-shadow: 2px 2px 3px #AAAAAA;
+				outline: none;
 				}
 
 			.leaflet-control-layers-expanded {
@@ -85,7 +95,7 @@
 				display: none;
 				position: absolute;
 				bottom: 12px;
-				left: 12px;
+				left: 60px;
 				z-index: 999000;
 				background-color: #7CB6F0;
 				padding: 0;
@@ -108,29 +118,8 @@
 			}
 			            
 			#attekintokep {
-				width: 100%;
 				border-radius: 20px;
-			}
-
-			#attekintobezaras {
-				cursor: pointer;
-				width: 100px;
-				height: 40px;
-				border-radius: 50px;
-				font-size: 14px;
-				color: #FFFFFF;
-				background-color: #0A335B;
-				border: none;
-				box-shadow: 0px 0px 5px #AAAAAA;
-				position: absolute;
-				bottom: 0px;
-				left: 0px;
-				z-index: 999;
-			}
-			
-			#attekintobezaras:hover {
-				background-color: #0d4074;
-				box-shadow: 0px 0px 10px #AAAAAA;
+				width: 100%;
 			}
 
 			#kezdopontcimke {
@@ -174,44 +163,68 @@
 				transform: translate(-50%, 0%);
 				z-index: 900;
 			}
-
+	
 			#kilepescimke {
 				cursor: pointer;
 				display: block;
-				position: absolute;
-				height: 28px;
-				width: 28px;
+				width: 40px;
 				border-radius: 50px;
 				font-size: 16px;
-				line-height: 28px;
+				line-height: 32px;
 				text-align: center;
 				color: #FFFFFF;
-				background-color: #c55a5a;
+				background-color: #7CB6F0;
 				border: none;
-				box-shadow: 0px 0px 5px #AAAAAA;
-				right: 8px;
-				bottom: 8px;
+				box-shadow: 0px 0px 10px #9c9c9c2d;
 			}
 
 			#kilepescimke:hover {
-				background-color: #9c3e3e;
-				box-shadow: 0px 0px 10px #AAAAAA;
+				background-color: #5798da;
+				box-shadow: 0px 0px 15px #5555552d;
 			}
 
 			#utvonaladatok {
+				flex-direction: column;
+				border-radius: 12px;
+				background-color: #ffffff44;
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
+				box-shadow: 0px 0px 15px #3534342d;
 				cursor: default;
 				display: none;
 				width: 300px;
 				padding: 5px 5px 5px 5px;
-				border-radius: 20px;
-				background-color: #FFFFFF;
-				box-shadow: 0px 0px 10px #AAAAAA;
 				position: absolute;
 				left: 50%;
 				bottom: 20px;
 				transform: translate(-50%, 0%);
 				z-index: 999;
 			}
+
+			#utvonaladatoklap{
+				padding: 8px;
+				align-self: center;
+				width: calc(100% - 20px);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+
+			.papirlap {
+				width: 100%;
+				background-color: #ffffff;
+				border: 1px solid #ffffff55; 
+				color: #313131;
+				font-size: 12px;
+				border-radius: 6px;
+				box-shadow: 0px 0px 15px #9c9c9c2d;
+			}
+
+			#sliderimage {
+					max-width: 80%;
+					object-fit: scale-down;
+					margin-bottom: 20px;
+				}
 
 			@media (orientation: portrait) {
 				#utvonaladatok {
@@ -237,7 +250,7 @@
 
 			#gyorsasagcsuszka {
 				width: 75%;
-				margin: auto;
+				margin: 12px auto auto auto;
 			}
 			
 			input[type=range] {
@@ -312,31 +325,31 @@
 			#hajourlapablak {
 				display: none;
 				position: absolute;
+				width: auto;
 				left: 50%;
-				bottom: 73px;
+				bottom: 250px;
 				transform: translate(-50%, 0%);
 				z-index: 999;
-				border-radius: 15px;
-				background-color: #FFFFFF;
-				box-shadow: 0px 0px 10px #AAAAAA;
 				padding: 10px;
 			}
 
 			#hajourlapmegnyitas {
+				margin: 12px auto 20px auto;
+				width: 80%;
+				background-color: #00000033;
+				box-shadow: none;
+				border: 1px solid #ffffff55;
+				color: white;
 				cursor: pointer;
-				height: 20px;
-				padding: 3px 10px;
-				background-color: #e7e7e7;
+				height: 28px;
+				line-height: 28px;
 				border-radius: 20px;
-				position: absolut;
 				text-align: center;
-				color: #666666;
 				margin-bottom: 20px;
 			}
 
 			#hajourlapmegnyitas:hover {
-				background-color: #cde1ff;
-				color: #28579e;
+				background-color: #0000004b;
 			}
 
 			#jelmagyarazat {
@@ -362,29 +375,157 @@
 				z-index: 999000;
 				padding: 0;
 			}
+			/*KERESÉS*/
+			#keresestarto {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				position: absolute;
+				background: none;
+				margin: 0px;
+				padding: 0px;
+				top: 14px;
+				left: 60px;
+				width: 220px;
+				height: auto;
+				z-index: 1000;
+				max-height: calc(100vh - 40px);
+			}
 
-			/*OLDALSÁV*/
 			#sav {
 				display: flex;
 				flex-direction: row;
-				width: 210px;
-				height: 32px;
+				align-self: stretch;
 				margin: 0;
-				padding: 0px 0px 0px 5px;
+				height: 32px;
+				padding: 0px 0px 0px 10px;
 				border: none;
 				box-shadow: 0px 0px 15px #9c9c9c2d;
 				font-weight: 400;
 				color: #636363;
-				font-size: 18px;
+				font-size: 16px;
 				z-index: 1000;
-				position: absolute;
-				top: 14px;
-				left: 60px;
-				border-radius: 6px;
-				background-color: #ffffffd2;
+				border-radius: 50px;
+				background-color: #ffffffbe;
 				backdrop-filter: blur(30px);
+				transition: 0.1s linear;
+				cursor: text;
 			}
 
+			#sav:hover {
+				background-color: #ffffff6e;
+			}
+
+			#keresomezo{
+				display: none;
+				width: 197px;
+				height: 30px;
+				background-color: #ffffff00;
+				border: none;
+				color: white;
+				font-size: 16px;
+				outline: none;
+				padding-bottom: 5px;
+			}
+
+			#keressgomb {
+				display: none;
+				color: white;
+				background-color:  #ffffff6c;
+				border: none;
+				border-radius: 50px;
+				position: absolute;
+				top: 3px;
+				right: 3px;
+				cursor: pointer;
+			}
+
+			#keressgomb:hover {
+				color: gray;
+				background-color:  #ffffff;
+			}
+
+			#kereses {
+				display: none;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				grid-template-areas:
+					'cshResz bufeResz'
+					'hotelResz tovabbiResz'
+					'sajathelyResz sajathelyResz'
+					'utvonalResz utvonalResz';
+				margin-top: 20px;
+				align-content: start;
+				column-gap: 8px;
+				row-gap: 8px;
+				border: none;
+				width: 100%;
+				font-weight: 400;
+				color: #636363;
+				font-size: 14px;
+				background-color: #ffffff00;
+			}
+
+			#cshResz { grid-area: cshResz; }
+			#bufeResz { grid-area: bufeResz; }
+			#hotelResz { grid-area: hotelResz; }
+			#tovabbiResz { grid-area: tovabbiResz; }
+			#sajathelyResz { grid-area: sajathelyResz; }
+			#utvonalResz { grid-area: utvonalResz; }
+
+			.keresesresz {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				height: 40px;
+				border-radius: 6px;
+				background-color: #ffffffce;
+				backdrop-filter: blur(300px);
+				-webkit-backdrop-filter: blur(300px);
+				cursor: pointer;
+			}
+
+			.keresesresz:hover {
+				background-color: #ffffffe5;
+			}
+
+			.nagykeresesresz {
+				padding-right: 20px;
+				justify-content: center;
+			}
+
+			.keresesreszkep {
+				height: 40px;
+			}
+
+			#talalatok {
+				display: none;
+				align-self: center;
+				padding: 0px;
+				margin-top: 20px;
+			}
+
+			#talalatlista {
+				margin: 0px;
+				padding: 4px 0px 4px 0px;
+				width: 100%;
+				list-style-type: none;
+				max-height: calc(100vh - 400px);
+				display: flex;
+				flex-direction: column;
+				overflow: auto;
+			}
+
+			#talalatlista li {
+				padding: 4px 8px;
+				cursor: pointer;
+			}
+
+			#talalatlista li:hover {
+				background-color: #7CB6F0;
+				color: white;
+			}
+
+			/*OLDALSÁV*/		
 			#oldalsav {
 				display: flex;
 				flex-direction: column;
@@ -396,7 +537,7 @@
 				position: absolute;
 				left: 0px;
 				z-index: 500;
-				background-color: #ffffffd2;
+				background-color: #ffffffbe;
 				backdrop-filter: blur(30px);
 				transition: width 0.3s;
 			}
@@ -415,7 +556,7 @@
 			}
 
 			.menuelem:hover {
-				background-color: #0077ee10;
+				background-color: #bddeffa9;
 			}
 
 			.menuelemgomb {
@@ -451,7 +592,7 @@
 				justify-content: space-between;
 				flex-direction: row;
 				background-color: #ffffff71;
-				box-shadow: 0px 0px 10px #aaaaaa38;
+				box-shadow: 0px 0px 15px #aaaaaa38;
 				color: #2e2e2e;
 				font-size: 18px;
 				z-index: 1000;
@@ -464,6 +605,7 @@
 				z-index: 711;
 				padding: 0px 8px 0px 0px;
 				transition: 0.3s linear;
+				cursor: default;
 			}
 
 			#weather-icon {
@@ -496,9 +638,40 @@
 	
 	<body>		
 		<!--Sáv-->
-		<div id = "sav">
-			<div style="line-height: 34px;" class="material-icons">&#xe8b6;</div>
-			<div style="line-height: 34px; margin-left: 5px;">Keresés..</div>
+		<div id="keresestarto">
+			<div id = "sav" onclick="javascript:kereseslapmegnyitas()">
+				<div style="line-height: 34px;" class="material-icons helykitolto">&#xe8b6;</div>
+				<div style="line-height: 34px; margin-left: 5px;" class="helykitolto">Keresés..</div>
+				<form>
+					<input type="text" id="keresomezo" placeholder="Keresés.." name="keresomezo" value="">
+					<input type="button" id="keressgomb" onclick="javascript:keress()" class="material-icons" value="&#xe8b6;">
+				</form>
+			</div>
+
+			<div id="kereses">
+				<div id="cshResz" class="keresesresz" onclick="javascript:keresstipust('csh')">
+					<img class="keresesreszkep" src="imagemap/csh.png"> Csónakházak
+				</div>
+				<div id="bufehResz" class="keresesresz" onclick="javascript:keresstipust('etterem')">
+					<img class="keresesreszkep" src="imagemap/etterem.png"> Büfék
+				</div>
+				<div id="hotelResz" class="keresesresz" onclick="javascript:keresstipust('hotel')">
+					<img class="keresesreszkep" src="imagemap/hotel.png"> Szálláshelyek
+				</div>
+				<div id="tovabbiResz" class="keresesresz" onclick="javascript:keresstipust('')">
+					<img class="keresesreszkep" src="imagemap/csillag.png"> Továbbiak
+				</div>
+				<div id="sajathelyResz" class="keresesresz nagykeresesresz" onclick="javascript:getLocationLeaflet()">
+					<img class="keresesreszkep" src="imagemap/location.png"> Saját pozíció keresése
+				</div>
+				<div id="utvonalResz" class="keresesresz nagykeresesresz" onclick="javascript:aPontKijeloles()">
+					<img class="keresesreszkep" src="imagemap/utvonalterv.png"> Vízi útvonaltervezés
+				</div>
+			</div>
+
+			<div class="papirlap" id="talalatok">
+				<ul id="talalatlista"></ul>
+			</div>
 		</div>
 	
 
@@ -525,21 +698,38 @@
 
 			<div id="xutvonaltervgomb" class="menuelem nyomottgomb" style="display: none;" onClick="javascript:kilepes()">
 				<img class='menuelemgomb'  src="imagemap/utvonalterv_feher.svg" title = "Útvonalterv megszakítása">
-				<div class="menuelemszoveg">Útvonaltervezés megszakítása</div>
+				<div class="menuelemszoveg">Útvonaltervezés</div>
 			</div>
 			
-			<div class="menuelem" onClick="javascript:showOverview();">
-				<img class='menuelemgomb' src="imagemap/attekinto.svg" title="Útvonaltervezés">
+			<div id="attekintomegnyitas" class="menuelem" onClick="javascript:showOverview();">
+				<img class='menuelemgomb' src="imagemap/attekinto.svg" title="Áttekintőtérkép">
 				<div class="menuelemszoveg">Áttekintőtérkép</div>
 			</div>
+
+			<div id="attekintobezaras" class="menuelem nyomottgomb" style="display: none;" onClick="javascript:closeAll()">
+				<img class='menuelemgomb'  src="imagemap/attekinto_feher.svg" title = "Áttekintőtérkép Bezárása">
+				<div class="menuelemszoveg">Áttekintőtérkép</div>
+			</div>
+
+			<img id="egyebgomb" class='menuelemgomb' onClick="javascript:openmenu();" src="imagemap/egyeb.svg" title="Továbbiak">
 			
-			<div class="menuelem" onClick="javascript:openLegend();">
+			<div id="jelmagyarazatmegnyitas" class="menuelem" onClick="javascript:openLegend();" style="display: none;">
 				<img class='menuelemgomb' src="imagemap/jelmagyarazat.svg" title="Jelmagyarázat">
 				<div class="menuelemszoveg">Jelmagyarázat</div>
 			</div>
 
-			<div class="menuelem" onClick="javascript:openCredits();">
+			<div id="jelmagyarazatbezaras" class="menuelem nyomottgomb" style="display: none;" onClick="javascript:closeAll()">
+				<img class='menuelemgomb'  src="imagemap/jelmagyarazat_feher.svg" title = "Jelmagyarázat Bezárása">
+				<div class="menuelemszoveg">Jelmagyarázat</div>
+			</div>
+
+			<div id="nevjegymegnyitas" class="menuelem" onClick="javascript:openCredits();" style="display: none;">
 				<img class='menuelemgomb' src="imagemap/nevjegy.svg" title="Névjegy">
+				<div class="menuelemszoveg">Névjegy</div>
+			</div>
+
+			<div id="nevjegybezaras" class="menuelem nyomottgomb" style="display: none;" onClick="javascript:closeAll()">
+				<img class='menuelemgomb'  src="imagemap/nevjegy_feher.svg" title = "Névjegy Bezárása">
 				<div class="menuelemszoveg">Névjegy</div>
 			</div>
 
@@ -556,18 +746,22 @@
                 <option value="19">Motorcsónak</option>
             </select><br/>-->
             <div id="hajourlapmegnyitas" title="Hajótípus kiválasztása" onclick="javasript:openHajourlap()">Kétszemélyes túrakenu</div>
-			<div style="text-align: center;">Evezési tempó</div>
-			<div id="gyorsasagcsuszka">
-				<input onchange="idokiszamitas()" type="range" min="9" max="11" value="10" id="slider">
+			<div class="papirlap" id="utvonaladatoklap" style="text-align: center;">Evezési tempó
+				<div id="gyorsasagcsuszka">
+					<input onchange="idokiszamitas()" type="range" min="9" max="11" value="10" id="slider">
+				</div>
+				<img id="sliderimage" src="imagemap/slider.png">
+				<div style="display: flex; width: 100%; justify-items: space-between;">
+					<div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
+						<div>Az útvonal teljes hossza: <span id="tavolsag"></span> km</div>
+						<div onload="idokiszamitas()">Időtartam: <span id="idotartam"></span> perc</div>	
+					</div>
+					<div id="kilepescimke" onclick = "javascript:kilepes()">OK</div>
+				</div>
 			</div>
-			<img id="sliderimage" style="width: 100%; margin-bottom: 20px;" src="imagemap/slider.png">
-			Az útvonal teljes hossza: <span id="tavolsag"></span> km <br>
-			<div style="display: inline-block; width: 200px;" onload="idokiszamitas()">Időtartam: <span id="idotartam"></span> perc</div>
-			<div id="kilepescimke" onclick = "javascript:kilepes()">OK</div>
-
 		</div>
 		
-		<div id="hajourlapablak" onclick="javasript:closeHajourlap()">
+		<div id="hajourlapablak" class="papirlap" onclick="javasript:closeHajourlap()">
 			<div style="z-index: 500;"></div>
 			<form id="hajourlap" onchange="idokiszamitas()">
 				<label><input type="radio" name="hajotipus" class="hajotipusvalasztogomb" onclick="hajonev('Kétszemélyes túrakenu')" value="1.9" id="turakenuparos" checked>Kétszemélyes túrakenu</label><br>
@@ -581,7 +775,6 @@
 
 		<!--Áttekitőtérkép-->
 		<div id = "attekintoterkep">
-
 			<img id="attekintokep" src="imagemap/attekinto.png" >
 				<a onclick="javascript:tassizsilip();" style="width:20.7%; height:5.6%; left:46.0%; top:92.1%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>
 				<a onclick="javascript:domsod();" style="width:23.1%; height:5.8%; left:49.4%; top:81.7%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>
@@ -593,10 +786,7 @@
 				<a onclick="javascript:soroksar();" style="width:26.1%; height:5.6%; left:66.6%; top:15.5%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>
 				<a onclick="javascript:csepel();" style="width:21.7%; height:5.5%; left:42.2%; top:13.7%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>
 				<a onclick="javascript:pesterzsebet();" style="width:31.4%; height:5.7%; left:63.8%; top:7.7%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>
-				<a onclick="javascript:kvassayzsilip();" style="width:25.3%; height:5.5%; left:30.7%; top:1.5%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>
-
-			<input type = "button" title = "Bezárás" value = "🌐 Bezárás" onClick = "javascript:hideOverview();" id = "attekintobezaras">
-		
+				<a onclick="javascript:kvassayzsilip();" style="width:25.3%; height:5.5%; left:30.7%; top:1.5%; position:absolute; cursor:pointer; display:block; z-index:5; overflow:hidden;"></a>		
 		</div>
 
 		<!--Jelmagyarázat-->
@@ -704,11 +894,12 @@
 			//Maptiler vector tile réteg: háttértérkép
 			var gl = L.mapboxGL({
 				attribution: "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e",
-				style: 'https://api.maptiler.com/maps/38f29785-a56d-4c2b-83e8-fbb072cd44a1/style.json?key=0t17Kubt2gQetLAE415b'
+				//style: 'https://api.maptiler.com/maps/38f29785-a56d-4c2b-83e8-fbb072cd44a1/style.json?key=0t17Kubt2gQetLAE415b'
+				style: 'https://api.maptiler.com/maps/40b1d6d8-b613-4fa2-b62a-8972acd989a4/style.json?key=0t17Kubt2gQetLAE415b'
 			}).addTo(map);
 
 			//Google műholdkép réteg
-			var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+			var googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
    				maxZoom: 20,
     			subdomains:['mt0','mt1','mt2','mt3']
 			});
@@ -835,8 +1026,9 @@
             }
 			
 			//geoJSON réteg: Poi
+			var poi
 			fetch('layers/rsdPoi.geojson').then(r=>r.json()).then(function(data) {
-			var poi = L.geoJSON(data, {
+			poi = L.geoJSON(data, {
 				pointToLayer: function(f,ll) {
 					return L.marker(ll,{icon: getIconPoi(f.properties.tipus)})
 				}
@@ -904,6 +1096,7 @@
 			var loccircle;
 
 			function onLocationFound(e) {
+				closeAll();
 				document.getElementById('helyesgomb').style.display="flex";
 				document.getElementById('helygomb').style.display="none";
 
@@ -950,82 +1143,75 @@
 
 			//Áttekintőtérkép megnyitása
 			function showOverview() {
+				closeAll();
     			document.getElementById('attekintoterkep').style.display="block";
 				document.getElementById('terkep_helye').style.filter="blur(5px)";
-				closemenu();
+				document.getElementById('attekintobezaras').style.display="flex";
+				document.getElementById('attekintomegnyitas').style.display="none";
 			}
 
 			//Áttekintőtérkép bezárása
 			function hideOverview() {
     			document.getElementById('attekintoterkep').style.display="none";
 				document.getElementById('terkep_helye').style.filter="none";
+				document.getElementById('attekintobezaras').style.display="none";
+				document.getElementById('attekintomegnyitas').style.display="flex";
 			}
 
 			//Áttekintőtérkép ugrás
 			function kvassayzsilip() {
 				map.setView([47.461359, 19.071478], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function pesterzsebet() {
 				map.setView([47.429929, 19.090537], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function csepel() {
 				map.setView([47.404673, 19.103524], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function soroksar() {
 				map.setView([47.394158, 19.109147], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function dunaharaszti() {
 				map.setView([47.359229, 19.078669], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function dunavarsany() {
 				map.setView([47.312870, 19.035241], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function majoshaza() {
 				map.setView([47.271276, 18.990162], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function szigetszentmarton() {
 				map.setView([47.227191, 18.967657], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function rackeve() {
 				map.setView([47.159151, 18.948833], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function domsod() {
 				map.setView([47.095805, 18.997219], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			function tassizsilip() {
 				map.setView([47.036923, 18.979255], 15);
-				document.getElementById('attekintoterkep').style.display="none";
-				document.getElementById('terkep_helye').style.filter="none";
+				hideOverview();
 			}
 
 			//Navigáció
@@ -1066,8 +1252,7 @@
 				document.getElementById('kezdopontcimke').style.display="block";
 				document.getElementById('xutvonaltervgomb').style.display="flex";
 				document.getElementById('utvonaltervgomb').style.display="none";
-				closeLegend();
-				closeCredits();
+				closeAll();
 			}
 
 			//B pont
@@ -1108,7 +1293,7 @@
 				
 				document.getElementById("tavolsag").innerHTML = tav;
                 document.getElementById('vegpontcimke').style.display="none";
-				document.getElementById('utvonaladatok').style.display="block";
+				document.getElementById('utvonaladatok').style.display="flex";
 				idokiszamitas();
 			}
 
@@ -1185,20 +1370,22 @@
 
 			//menu megnyitas
 			function openmenu() {
+				closeAll();
 				document.getElementById('oldalsav').style.cssText="width: 100vw; display: flex;"
 				document.getElementById('menubezarasgomb').style.display="block";
 				document.getElementById('menugomb').style.display="none";
 				document.getElementById('container').style.cssText="width: 260px; left: 12px; background-color: #eeeeee; box-shadow: none;";
 				document.getElementById('location').style.display="block";
 
+				document.getElementById('jelmagyarazatmegnyitas').style.display="flex";
+				document.getElementById('nevjegymegnyitas').style.display="flex";
+				document.getElementById('egyebgomb').style.display="none";
+
 				var x = document.getElementsByClassName('menuelemszoveg');
 				var i;
 				for (i = 0; i < x.length; i++) {
 					x[i].style.display="block";
 				}
-
-				closeCredits();
-				closeLegend();
 			}
 
 			//menu bezaras
@@ -1209,6 +1396,10 @@
 				document.getElementById('container').removeAttribute('style');
 				document.getElementById('location').style.display="none";
 
+				document.getElementById('jelmagyarazatmegnyitas').style.display="none";
+				document.getElementById('nevjegymegnyitas').style.display="none";
+				document.getElementById('egyebgomb').style.display="block";
+
 				var x = document.getElementsByClassName('menuelemszoveg');
 				var i;
 				for (i = 0; i < x.length; i++) {
@@ -1218,28 +1409,49 @@
 
 			//Jelmagyarázat megnyitás
 			function openLegend() {
+				closeAll();
     			document.getElementById('jelmagyarazat').style.display="block";
 				document.getElementById('terkep_helye').style.filter="blur(5px)";
-				closemenu();
+				document.getElementById('jelmagyarazatmegnyitas').style.display="none";
+				document.getElementById('jelmagyarazatbezaras').style.display="flex";
+				document.getElementById('nevjegymegnyitas').style.display="none";
 			}
 
 			//Jelmagyarázat bezárás
 			function closeLegend() {
     			document.getElementById('jelmagyarazat').style.display="none";
 				document.getElementById('terkep_helye').style.filter="none";
+				//document.getElementById('jelmagyarazatmegnyitas').style.display="flex";
+				document.getElementById('jelmagyarazatbezaras').style.display="none";
+				document.getElementById('jelmagyarazatmegnyitas').style.display="none";
 			}
 			
 			//Névjegy megnyitás
 			function openCredits() {
+				closeAll();
     			document.getElementById('nevjegy').style.display="block";
 				document.getElementById('terkep_helye').style.filter="blur(5px)";
-				closemenu();
+				document.getElementById('nevjegymegnyitas').style.display="none";
+				document.getElementById('nevjegybezaras').style.display="flex";
+				document.getElementById('jelmagyarazatmegnyitas').style.display="none";
 			}
 
 			//Névjegy bezárás
 			function closeCredits() {
     			document.getElementById('nevjegy').style.display="none";
 				document.getElementById('terkep_helye').style.filter="none";
+				//document.getElementById('nevjegymegnyitas').style.display="flex";
+				document.getElementById('nevjegybezaras').style.display="none";
+				document.getElementById('nevjegymegnyitas').style.display="none";
+			}
+
+			//Minden elem elrejtése
+			function closeAll() {
+				closemenu();
+				closeLegend();
+				closeCredits();
+				hideOverview();
+				kereseslapbezaras();
 			}
 
 			//⛅Időjárás
@@ -1284,6 +1496,204 @@
 					tempC.textContent = `${temp.toFixed(0)} °C`;
 					});
 			};
+
+			//KERESÉS
+			function kereseslapmegnyitas() {
+				closeAll();
+				kilepes();
+				document.getElementById('kereses').style.display="grid";
+				document.getElementById('keresestarto').style.cssText="height: auto; width: 300px; padding: 8px; border-radius: 12px; background-color: #ffffff44; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0px 0px 15px #3534342d;";
+				document.getElementById('sav').style.cssText="margin-top: 12px; align-self: center; width: 80%; background-color: #00000033; box-shadow: none; border: 1px solid #ffffff55; color: white;";
+				document.getElementById('keresomezo').style.display="block";
+				document.getElementById("keresomezo").focus();
+				document.getElementById('keressgomb').style.display="block";
+
+				var x = document.getElementsByClassName('helykitolto');
+				var i;
+				for (i = 0; i < x.length; i++) {
+					x[i].style.display="none";
+				}
+			};
+
+			function kereseslapbezaras() {
+				document.getElementById('kereses').style.display="none";
+				document.getElementById('sav').style.width='';
+				document.getElementById('sav').style.borderRadius='';
+				document.getElementById('sav').style.left='';
+				document.getElementById('sav').style.top='';
+				document.getElementById('sav').style.backgroundColor='';
+				document.getElementById('sav').style.boxShadow='';
+				document.getElementById('sav').style.color='';
+				document.getElementById('sav').style.marginTop='';
+				document.getElementById('sav').style.alignSelf='';
+				document.getElementById('keresestarto').style.height='';
+				document.getElementById('keresestarto').style.width='';
+				document.getElementById('keresestarto').style.background='';
+				document.getElementById('keresestarto').style.borderRadius='';
+				document.getElementById('keresestarto').style.boxShadow='';
+				document.getElementById('keresestarto').style.padding='';
+				document.getElementById('keresomezo').style.display="none";
+				document.getElementById('keressgomb').style.display="none";
+				document.getElementById('talalatok').style.display="none";
+
+				document.getElementById('keresomezo').value='';
+
+				var x = document.getElementsByClassName('helykitolto');
+				var i;
+				for (i = 0; i < x.length; i++) {
+					x[i].style.display="block";
+				}
+			};
+
+
+
+			/*function keress() {
+				var kifejezes = document.getElementById('keresomezo').value;
+				var talalat = _.find(cities.locations, {'title': kifejezes});
+				if (!talalat)
+					window.alert('Nincs találat');
+				else
+					window.alert('Go to ' + talalat.url);
+			}*/
+
+			/*function keress() {
+				var kifejezes = document.getElementById('keresomezo').value;
+				var talalat = _.find(poi.features[i].properties , {'nev': kifejezes});
+				var talalatkoord = talalat.properties.geometry.coordinates;
+				if (!talalat)
+					window.alert('Nincs találat');
+				else
+					map.setView(talalatkoord, 15);
+				console.log(talalat);
+				//console.log(kifejezes);
+				console.log(poi);
+			};	*/
+
+			
+			function keress() {
+				var poidata = /*fetch('layers/rsdPoi.geojson').then(response => {return response.json();})*/
+				{
+				"type": "FeatureCollection",
+				"name": "rsdPoi",
+				"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+				"features": [
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "csh", "megjegyzes": "kajak, kenu, sárkányhajó kölcsönzés", "web": "http:\/\/kolonicsvizitelep.hu\/", "nyitva": "H-V 6:00-22:00", "telefon": "+36309360513", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0877556455, 47.4345088549 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "MTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": "mtk.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0878281269, 47.4335025702 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Pestrezsébeti Jódos-Sós Gyógy- és Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.pesterzsebetifurdo.hu\/", "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908678897, 47.4354434652 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Duna Garden", "tipus": "hotel", "megjegyzes": null, "web": "http:\/\/www.dunagarden.hu\/", "nyitva": null, "telefon": "+3612878250", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0904970775, 47.4334651473 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "ESMTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.090377718, 47.4324853203 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "VakVarjú Csónakház", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908469567, 47.4320620238 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kalóztanya", "tipus": "csh", "megjegyzes": "kajak, kenu, motorcsónak kölcsönzés", "web": "turahajozas.hu", "nyitva": "H-V 9:00-19:00", "telefon": "+36309704881", "email": "turahajozas@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0888963598, 47.4378823403 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "MTK evezőstelep", "tipus": "csh", "megjegyzes": null, "web": "http:\/\/mtk.hu\/szakosztalyok\/evezes", "nyitva": "H-V 6:00-21:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0916950794, 47.4302358326 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Halas Guszti", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/Halas-Guszti-111012957361959", "nyitva": "H-V 11:30-22:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0927768709, 47.42839685 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "MEC Regatta Club", "tipus": "csh", "megjegyzes": "túrakenu, sárkányhajó kölcsönzés", "web": "http:\/\/www.mec.hu\/", "nyitva": null, "telefon": "+36205936130", "email": "mec@mec.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931079022, 47.4262407191 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "FTC Kajak-kenu szakosztály", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-SZO 9:00-19:00", "telefon": "+36209848816", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0931300766, 47.4257677773 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "ELTE Evezős Klub", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "http:\/\/www.eltesport.hu\/vizisporttelep\/arak", "nyitva": "H-V 7:00-21:00", "telefon": "+36308680310", "email": "vizisporttelep@eltesport.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931585864, 47.4256043963 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Milestone Rowing Club", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-P 9:00-18:00; SZO 9:00-17:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0934215109, 47.4248863742 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Vízművek Evezős Klub", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0938586623, 47.4233664564 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kis-Duna Büfé", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": "H-P 12:00-19:00; SZO-V: 12:00-20:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0992280225, 47.4129150199 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Kajak-Kenu Egyesület", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "https:\/\/www.csepelkajakkenu.hu\/", "nyitva": "H-V 8:00-20:00", "telefon": "+36309970579", "email": "info@csepelkajakkenu.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.1026492077, 47.4045573143 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György emléktábla", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1032059422, 47.4042691308 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1046765767, 47.4009126982 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "A Nagy Ho-ho horgász szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1103247001, 47.3978606713 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Nocsak Bár", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/nocsakbar", "nyitva": "CS-P 12:00-22:00; SZO-V 10:00-22:00", "telefon": "(30) 115 9059", "email": "nocsakbar@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.1024147932, 47.3828732624 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Stég Placc", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "(30) 963 9621", "email": "hamzazoltan@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0937477906, 47.3714507399 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.csepelistrandfurdo.hu\/", "nyitva": "H-P 6:00-20:00; SZO-V 8:00-20:00", "telefon": "+3612776576", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1015513888, 47.4066332753 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Csepel", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/csepeli-kajak-kenu-egyesulet-megallohely", "nyitva": null, "telefon": "+36 30 950 7881", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1029987368, 47.4045790774 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Hullám Csónakház", "tipus": "vm", "megjegyzes": "ESMTK Kajak-Kenu Telep", "web": "https:\/\/evezzitthon.hu\/budapest\/pesterzsebet\/hullam-csonakhaz", "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.09013935, 47.4324637545 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/kolonics-gyorgy-vizisport-kozpont-megallohely", "nyitva": "H-V 6:00-22:00", "telefon": "+36 70 639 0000", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.088052754, 47.434495404 ] } }
+				]
+				}
+				//console.log(poidata);
+
+				var talalat;
+				var talalatnev;
+				var kifejezes = document.getElementById('keresomezo').value;
+				for (var i=0 ; i < poidata.features.length ; i++) {
+					if (poidata.features[i].properties.nev == kifejezes) {
+						talalat = (poidata.features[i].geometry.coordinates);
+						talalatnev = (poidata.features[i].properties.nev);
+					}
+				}
+				if (talalat == null) {
+					window.alert('Nincs találat');
+				}
+				else {
+				var helyestalalat = talalat.reverse();
+				//console.log(helyestalalat);
+				map.setView(helyestalalat, 19);
+				};
+
+				//console.log(talalatnev);
+				//console.log(talalatdoboz);
+			}
+
+			function keresstipust(data) {
+				var poidata = /*fetch('layers/rsdPoi.geojson').then(response => {return response.json();})*/
+				{
+				"type": "FeatureCollection",
+				"name": "rsdPoi",
+				"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+				"features": [
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "csh", "megjegyzes": "kajak, kenu, sárkányhajó kölcsönzés", "web": "http:\/\/kolonicsvizitelep.hu\/", "nyitva": "H-V 6:00-22:00", "telefon": "+36309360513", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0877556455, 47.4345088549 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "MTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": "mtk.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0878281269, 47.4335025702 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Pestrezsébeti Jódos-Sós Gyógy- és Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.pesterzsebetifurdo.hu\/", "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908678897, 47.4354434652 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Duna Garden", "tipus": "hotel", "megjegyzes": null, "web": "http:\/\/www.dunagarden.hu\/", "nyitva": null, "telefon": "+3612878250", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0904970775, 47.4334651473 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "ESMTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.090377718, 47.4324853203 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "VakVarjú Csónakház", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908469567, 47.4320620238 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kalóztanya", "tipus": "csh", "megjegyzes": "kajak, kenu, motorcsónak kölcsönzés", "web": "turahajozas.hu", "nyitva": "H-V 9:00-19:00", "telefon": "+36309704881", "email": "turahajozas@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0888963598, 47.4378823403 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "MTK evezőstelep", "tipus": "csh", "megjegyzes": null, "web": "http:\/\/mtk.hu\/szakosztalyok\/evezes", "nyitva": "H-V 6:00-21:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0916950794, 47.4302358326 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Halas Guszti", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/Halas-Guszti-111012957361959", "nyitva": "H-V 11:30-22:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0927768709, 47.42839685 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "MEC Regatta Club", "tipus": "csh", "megjegyzes": "túrakenu, sárkányhajó kölcsönzés", "web": "http:\/\/www.mec.hu\/", "nyitva": null, "telefon": "+36205936130", "email": "mec@mec.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931079022, 47.4262407191 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "FTC Kajak-kenu szakosztály", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-SZO 9:00-19:00", "telefon": "+36209848816", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0931300766, 47.4257677773 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "ELTE Evezős Klub", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "http:\/\/www.eltesport.hu\/vizisporttelep\/arak", "nyitva": "H-V 7:00-21:00", "telefon": "+36308680310", "email": "vizisporttelep@eltesport.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931585864, 47.4256043963 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Milestone Rowing Club", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-P 9:00-18:00; SZO 9:00-17:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0934215109, 47.4248863742 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Vízművek Evezős Klub", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0938586623, 47.4233664564 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kis-Duna Büfé", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": "H-P 12:00-19:00; SZO-V: 12:00-20:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0992280225, 47.4129150199 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Kajak-Kenu Egyesület", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "https:\/\/www.csepelkajakkenu.hu\/", "nyitva": "H-V 8:00-20:00", "telefon": "+36309970579", "email": "info@csepelkajakkenu.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.1026492077, 47.4045573143 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György emléktábla", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1032059422, 47.4042691308 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1046765767, 47.4009126982 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "A Nagy Ho-ho horgász szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1103247001, 47.3978606713 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Nocsak Bár", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/nocsakbar", "nyitva": "CS-P 12:00-22:00; SZO-V 10:00-22:00", "telefon": "(30) 115 9059", "email": "nocsakbar@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.1024147932, 47.3828732624 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Stég Placc", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "(30) 963 9621", "email": "hamzazoltan@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0937477906, 47.3714507399 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.csepelistrandfurdo.hu\/", "nyitva": "H-P 6:00-20:00; SZO-V 8:00-20:00", "telefon": "+3612776576", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1015513888, 47.4066332753 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Csepel", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/csepeli-kajak-kenu-egyesulet-megallohely", "nyitva": null, "telefon": "+36 30 950 7881", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1029987368, 47.4045790774 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Hullám Csónakház", "tipus": "vm", "megjegyzes": "ESMTK Kajak-Kenu Telep", "web": "https:\/\/evezzitthon.hu\/budapest\/pesterzsebet\/hullam-csonakhaz", "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.09013935, 47.4324637545 ] } },
+				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/kolonics-gyorgy-vizisport-kozpont-megallohely", "nyitva": "H-V 6:00-22:00", "telefon": "+36 70 639 0000", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.088052754, 47.434495404 ] } }
+				]
+				}
+				//console.log(poidata);
+				document.getElementById('talalatok').style.display="block";
+
+				var talalattabla = [];
+				for (var i=0 ; i < poidata.features.length ; i++) {
+					if (poidata.features[i].properties.tipus == data) {
+						talalat = (poidata.features[i].geometry.coordinates);
+						talalatnev = (poidata.features[i].properties.nev);
+						talalattabla.push(talalatnev);
+					}
+				}
+
+				//console.log(talalatnev);
+				//console.log(talalattabla);
+
+				document.getElementById('talalatlista').innerHTML = '';
+
+				talalattabla.forEach(function (item) {
+					var elem = document.createElement('li');
+					talalatlista.appendChild(elem);
+					elem.innerHTML += item;
+
+					elem.onclick = function() {
+						document.getElementById('keresomezo').value=elem.innerHTML;
+						keress();
+					}
+				});
+
+				
+								
+			}			
+				
 		</script>
 		
 	</body>
