@@ -1,3 +1,11 @@
+<!--
+A Ráckevei–Soroksári-Duna interaktív vízisport-térképe
+
+(C) 2021 Bakó Tamás & Mátyás Gede, ELTE Eötvös Loránd University, Budapest
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+-->
 <!doctype html>
 <html>
 
@@ -9,26 +17,18 @@
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="leaflet/leaflet.css" />
 		<script src="leaflet/leaflet.js"></script>
-		<!--<script src="leaflet/leaflet-wmsgetfeatureinfo.js"></script>-->
-
-		<!--Vektorcsempe réteg-->
 		<script src="https://unpkg.com/leaflet.vectorgrid@latest/dist/Leaflet.VectorGrid.bundled.js"></script>
         <script src="https://unpkg.com/geobuf@3.0.2/dist/geobuf.js"></script>
         <script src="https://unpkg.com/pbf@3.0.5/dist/pbf.js"></script>
 		
 		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
 		<script src="https://cdn.maptiler.com/mapbox-gl-js/v1.5.1/mapbox-gl.js"></script>
 		<script src="https://cdn.maptiler.com/mapbox-gl-leaflet/latest/leaflet-mapbox-gl.js"></script>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" />
 		<link rel="stylesheet" href="https://cdn.maptiler.com/mapbox-gl-js/v1.5.1/mapbox-gl.css" />
 
 		<!--Kereséshez-->
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js'></script>
 
-		<!--GeoJSON-->
-		<script type="text/javascript" src="layers/rsdPoi.geojson"></script>
-		
 		<!--Betűtípusok-->
 		<link rel="preconnect" href="https://fonts.gstatic.com">
 		<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet"> 
@@ -39,6 +39,7 @@
 		<!--Útvonaltervhez-->
 		<script src="https://npmcdn.com/leaflet-geometryutil"></script>
 		
+
 		<style>
 
 			.leaflet-control-layers {
@@ -985,18 +986,8 @@
     			subdomains:['mt0','mt1','mt2','mt3']
 			});
 			
-			//WMS réteg: RSD mélység
-			var wmsLayer = L.tileLayer.wms('http://mercator.elte.hu/cgi-bin/mapserv?map=/home/hal2017/jki9y6/public_html/webgis/RSD_contourlines.map', {
-   			 layers: 'depth_3857',
-			 format: 'image/png',
-			 transparent: true,
-			 maxZoom: 20
-			}).addTo(map);
-			wmsLayer.setZIndex(5);
-			//WmsGetFeatureInfo
-			map.addHandler('wmsgfi', L.WmsGetFeatureInfo);
-
-			/*var colors=[
+			// batimetria színei
+            var colors=[
                 { d: 5, c: 'rgb(1,87,155)' },
                 { d: 4, c: 'rgb(2,109,189)' },
                 { d: 3, c: 'rgb(5,115,213)' },
@@ -1015,9 +1006,11 @@
                 return 'rgb(240,248,254)';
             }
             var t0=new Date()
-            var vl=L.vectorGrid.protobuf('depth/{z}/{x}/{y}.pbf', {
+            // RSD vízmélység vector tile réteg
+            var vl=L.vectorGrid.protobuf('depthtiles/{z}/{x}/{y}.pbf', {
                 maxZoom: 20,
                 maxNativeZoom: 15,
+                interactive: true,
                 vectorTileLayerStyles: {
                     depth: function(p,z) {
                         return {
@@ -1028,8 +1021,9 @@
                         }
                     }
                 }
-            }).addTo(map);*/
-			
+            }).addTo(map);
+			vl.bindPopup(f=>'vízmélység '+f.properties.NAME+' m');
+            
 			//Rétegkezelő
 			var alap = {'Térkép': gl, 'Műhold': googleSat};
 			//var fedveny = {'Kiötőhelyek': kikotohely};
@@ -1141,9 +1135,10 @@
             }
 			
 			//geoJSON réteg: Poi
-			var poi;
+			var poi,poidata;
 			fetch('layers/rsdPoi.geojson').then(r=>r.json()).then(function(data) {
-			poi = L.geoJSON(data, {
+			poidata=data;
+            poi = L.geoJSON(data, {
 				pointToLayer: function(f,ll) {
 					return L.marker(ll,{icon: getIconPoi(f.properties.tipus)})
 				}
@@ -1583,7 +1578,8 @@
 			const desc = document.querySelector('.desc');
 
 			
-			var weatherQueryTiming = setInterval(weatherQuery, 5000);
+			// weather data
+            /*var weatherQueryTiming = setInterval(weatherQuery, 5000);
 			function weatherQuery() {
 
 				var kozeppont = L.latLng(map.getCenter());
@@ -1613,7 +1609,7 @@
 					desc.textContent = `${description}`;
 					tempC.textContent = `${temp.toFixed(0)} °C`;
 					});
-			};
+			};*/
 
 			//KERESÉS
 			function kereseslapmegnyitas() {
@@ -1699,40 +1695,6 @@
 
 			
 			function keress() {
-				var poidata = /*fetch('layers/rsdPoi.geojson').then(response => {return response.json();})*/
-				{
-				"type": "FeatureCollection",
-				"name": "rsdPoi",
-				"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-				"features": [
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "csh", "megjegyzes": "kajak, kenu, sárkányhajó kölcsönzés", "web": "http:\/\/kolonicsvizitelep.hu\/", "nyitva": "H-V 6:00-22:00", "telefon": "+36309360513", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0877556455, 47.4345088549 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "MTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": "mtk.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0878281269, 47.4335025702 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Pestrezsébeti Jódos-Sós Gyógy- és Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.pesterzsebetifurdo.hu\/", "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908678897, 47.4354434652 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Duna Garden", "tipus": "hotel", "megjegyzes": null, "web": "http:\/\/www.dunagarden.hu\/", "nyitva": null, "telefon": "+3612878250", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0904970775, 47.4334651473 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "ESMTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.090377718, 47.4324853203 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "VakVarjú Csónakház", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908469567, 47.4320620238 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kalóztanya", "tipus": "csh", "megjegyzes": "kajak, kenu, motorcsónak kölcsönzés", "web": "turahajozas.hu", "nyitva": "H-V 9:00-19:00", "telefon": "+36309704881", "email": "turahajozas@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0888963598, 47.4378823403 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "MTK evezőstelep", "tipus": "csh", "megjegyzes": null, "web": "http:\/\/mtk.hu\/szakosztalyok\/evezes", "nyitva": "H-V 6:00-21:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0916950794, 47.4302358326 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Halas Guszti", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/Halas-Guszti-111012957361959", "nyitva": "H-V 11:30-22:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0927768709, 47.42839685 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "MEC Regatta Club", "tipus": "csh", "megjegyzes": "túrakenu, sárkányhajó kölcsönzés", "web": "http:\/\/www.mec.hu\/", "nyitva": null, "telefon": "+36205936130", "email": "mec@mec.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931079022, 47.4262407191 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "FTC Kajak-kenu szakosztály", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-SZO 9:00-19:00", "telefon": "+36209848816", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0931300766, 47.4257677773 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "ELTE Evezős Klub", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "http:\/\/www.eltesport.hu\/vizisporttelep\/arak", "nyitva": "H-V 7:00-21:00", "telefon": "+36308680310", "email": "vizisporttelep@eltesport.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931585864, 47.4256043963 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Milestone Rowing Club", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-P 9:00-18:00; SZO 9:00-17:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0934215109, 47.4248863742 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Vízművek Evezős Klub", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0938586623, 47.4233664564 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kis-Duna Büfé", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": "H-P 12:00-19:00; SZO-V: 12:00-20:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0992280225, 47.4129150199 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Kajak-Kenu Egyesület", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "https:\/\/www.csepelkajakkenu.hu\/", "nyitva": "H-V 8:00-20:00", "telefon": "+36309970579", "email": "info@csepelkajakkenu.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.1026492077, 47.4045573143 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György emléktábla", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1032059422, 47.4042691308 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1046765767, 47.4009126982 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "A Nagy Ho-ho horgász szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1103247001, 47.3978606713 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Nocsak Bár", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/nocsakbar", "nyitva": "CS-P 12:00-22:00; SZO-V 10:00-22:00", "telefon": "(30) 115 9059", "email": "nocsakbar@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.1024147932, 47.3828732624 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Stég Placc", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "(30) 963 9621", "email": "hamzazoltan@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0937477906, 47.3714507399 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.csepelistrandfurdo.hu\/", "nyitva": "H-P 6:00-20:00; SZO-V 8:00-20:00", "telefon": "+3612776576", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1015513888, 47.4066332753 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Csepel", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/csepeli-kajak-kenu-egyesulet-megallohely", "nyitva": null, "telefon": "+36 30 950 7881", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1029987368, 47.4045790774 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Hullám Csónakház", "tipus": "vm", "megjegyzes": "ESMTK Kajak-Kenu Telep", "web": "https:\/\/evezzitthon.hu\/budapest\/pesterzsebet\/hullam-csonakhaz", "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.09013935, 47.4324637545 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/kolonics-gyorgy-vizisport-kozpont-megallohely", "nyitva": "H-V 6:00-22:00", "telefon": "+36 70 639 0000", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.088052754, 47.434495404 ] } }
-				]
-				}
-
 				var hintlist = document.getElementById('javaslatok');
                 var hintlayer = poi.getLayers();
                 for (var i=0; i < hintlayer.length; i++) {
@@ -1779,40 +1741,7 @@
             }
 
 			function keresstipust(data) {
-				var poidata = /*fetch('layers/rsdPoi.geojson').then(response => {return response.json();})*/
-				{
-				"type": "FeatureCollection",
-				"name": "rsdPoi",
-				"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-				"features": [
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "csh", "megjegyzes": "kajak, kenu, sárkányhajó kölcsönzés", "web": "http:\/\/kolonicsvizitelep.hu\/", "nyitva": "H-V 6:00-22:00", "telefon": "+36309360513", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0877556455, 47.4345088549 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "MTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": "mtk.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0878281269, 47.4335025702 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Pestrezsébeti Jódos-Sós Gyógy- és Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.pesterzsebetifurdo.hu\/", "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908678897, 47.4354434652 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Duna Garden", "tipus": "hotel", "megjegyzes": null, "web": "http:\/\/www.dunagarden.hu\/", "nyitva": null, "telefon": "+3612878250", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0904970775, 47.4334651473 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "ESMTK Kajak-Kenu Telep", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.090377718, 47.4324853203 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "VakVarjú Csónakház", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0908469567, 47.4320620238 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kalóztanya", "tipus": "csh", "megjegyzes": "kajak, kenu, motorcsónak kölcsönzés", "web": "turahajozas.hu", "nyitva": "H-V 9:00-19:00", "telefon": "+36309704881", "email": "turahajozas@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0888963598, 47.4378823403 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "MTK evezőstelep", "tipus": "csh", "megjegyzes": null, "web": "http:\/\/mtk.hu\/szakosztalyok\/evezes", "nyitva": "H-V 6:00-21:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0916950794, 47.4302358326 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Halas Guszti", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/Halas-Guszti-111012957361959", "nyitva": "H-V 11:30-22:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0927768709, 47.42839685 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "MEC Regatta Club", "tipus": "csh", "megjegyzes": "túrakenu, sárkányhajó kölcsönzés", "web": "http:\/\/www.mec.hu\/", "nyitva": null, "telefon": "+36205936130", "email": "mec@mec.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931079022, 47.4262407191 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "FTC Kajak-kenu szakosztály", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-SZO 9:00-19:00", "telefon": "+36209848816", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0931300766, 47.4257677773 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "ELTE Evezős Klub", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "http:\/\/www.eltesport.hu\/vizisporttelep\/arak", "nyitva": "H-V 7:00-21:00", "telefon": "+36308680310", "email": "vizisporttelep@eltesport.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.0931585864, 47.4256043963 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Milestone Rowing Club", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": "H-P 9:00-18:00; SZO 9:00-17:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0934215109, 47.4248863742 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Vízművek Evezős Klub", "tipus": "csh", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0938586623, 47.4233664564 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kis-Duna Büfé", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": "H-P 12:00-19:00; SZO-V: 12:00-20:00", "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.0992280225, 47.4129150199 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Kajak-Kenu Egyesület", "tipus": "csh", "megjegyzes": "kajak, kenu kölcsönzés", "web": "https:\/\/www.csepelkajakkenu.hu\/", "nyitva": "H-V 8:00-20:00", "telefon": "+36309970579", "email": "info@csepelkajakkenu.hu" }, "geometry": { "type": "Point", "coordinates": [ 19.1026492077, 47.4045573143 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György emléktábla", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1032059422, 47.4042691308 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1046765767, 47.4009126982 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "A Nagy Ho-ho horgász szobor", "tipus": "szobor", "megjegyzes": null, "web": null, "nyitva": null, "telefon": null, "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1103247001, 47.3978606713 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Nocsak Bár", "tipus": "etterem", "megjegyzes": null, "web": "https:\/\/www.facebook.com\/nocsakbar", "nyitva": "CS-P 12:00-22:00; SZO-V 10:00-22:00", "telefon": "(30) 115 9059", "email": "nocsakbar@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.1024147932, 47.3828732624 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Stég Placc", "tipus": "etterem", "megjegyzes": null, "web": null, "nyitva": null, "telefon": "(30) 963 9621", "email": "hamzazoltan@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.0937477906, 47.3714507399 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Csepeli Strandfürdő", "tipus": "strand", "megjegyzes": null, "web": "http:\/\/www.csepelistrandfurdo.hu\/", "nyitva": "H-P 6:00-20:00; SZO-V 8:00-20:00", "telefon": "+3612776576", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1015513888, 47.4066332753 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Csepel", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/csepeli-kajak-kenu-egyesulet-megallohely", "nyitva": null, "telefon": "+36 30 950 7881", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.1029987368, 47.4045790774 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Hullám Csónakház", "tipus": "vm", "megjegyzes": "ESMTK Kajak-Kenu Telep", "web": "https:\/\/evezzitthon.hu\/budapest\/pesterzsebet\/hullam-csonakhaz", "nyitva": null, "telefon": "+36 20 925 8503", "email": "esmtk.iroda@gmail.com" }, "geometry": { "type": "Point", "coordinates": [ 19.09013935, 47.4324637545 ] } },
-				{ "type": "Feature", "properties": { "id": null, "nev": "Kolonics György Vízisport Központ", "tipus": "vm", "megjegyzes": null, "web": "https:\/\/evezzitthon.hu\/budapest\/csepel\/kolonics-gyorgy-vizisport-kozpont-megallohely", "nyitva": "H-V 6:00-22:00", "telefon": "+36 70 639 0000", "email": null }, "geometry": { "type": "Point", "coordinates": [ 19.088052754, 47.434495404 ] } }
-				]
-				}
-				//console.log(poidata);
+				
 				document.getElementById('talalatok').style.display="block";
 
 				var talalattabla = [];
