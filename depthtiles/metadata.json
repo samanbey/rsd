@@ -1,6 +1,6 @@
 {
-"name": "na",
-"description": "na",
+"name": "depthtilespc",
+"description": "depthtilespc",
 "version": "2",
 "minzoom": "0",
 "maxzoom": "15",
@@ -9,6 +9,6 @@
 "type": "overlay",
 "format": "pbf",
 "generator": "tippecanoe v1.36.0",
-"generator_options": "tippecanoe -zg -e na -pi depth.geojson",
+"generator_options": "tippecanoe -zg -e depthtilespc -pC -pi depth.geojson",
 "json": "{\"vector_layers\": [ { \"id\": \"depth\", \"description\": \"\", \"minzoom\": 0, \"maxzoom\": 15, \"fields\": {\"ELEVATION\": \"Number\", \"NAME\": \"String\"} } ],\"tilestats\": {\"layerCount\": 1,\"layers\": [{\"layer\": \"depth\",\"count\": 12051,\"geometry\": \"Polygon\",\"attributeCount\": 2,\"attributes\": [{\"attribute\": \"ELEVATION\",\"count\": 28,\"type\": \"number\",\"values\": [0,0.5,1,1.5,10,10.5,11,11.5,12,12.5,13,13.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5],\"min\": 0,\"max\": 13.5},{\"attribute\": \"NAME\",\"count\": 28,\"type\": \"string\",\"values\": [\"0\",\"0.5\",\"1\",\"1.5\",\"10\",\"10.5\",\"11\",\"11.5\",\"12\",\"12.5\",\"13\",\"13.5\",\"2\",\"2.5\",\"3\",\"3.5\",\"4\",\"4.5\",\"5\",\"5.5\",\"6\",\"6.5\",\"7\",\"7.5\",\"8\",\"8.5\",\"9\",\"9.5\"]}]}]}}"
 }
