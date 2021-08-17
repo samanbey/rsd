@@ -78,6 +78,8 @@ var tiloskikotniIkon = L.icon({
 var dName={
     limany: 'limány',
     
+    magassteg: 'magasstég',
+    molo: 'móló',
     allohajo: 'állóhajó',
     steg: 'stég',
     
@@ -214,20 +216,20 @@ retegkezelo.addOverlay(parttipusok, 'Partvonal');
 //geoJSON réteg: Kikötőhelyek
 var kikotohely;
 fetch('layers/rsdKikotohelyek.geojson').then(r=>r.json()).then(function(data) {
-kikotohely = L.geoJSON(data, { pane: 'kikotohelypane',
-    style: function(feature) {
-        switch (feature.properties.tipus) {
-            case 'steg': return {color: "#CC99FF", fillOpacity: 1, opacity: 1,};
-            case 'ponton': return {color: "#F69BFD", fillOpacity: 1, opacity: 1,};
-            case 'magassteg': return {color: "#000000", fillColor: "#CC99FF", fillOpacity: 1, opacity: 0.5,};
-            case 'allohajo': return {color: "#7F6387", fillOpacity: 1, opacity: 1,};
-            case 'molo': return {color: "#D9D9D9", fillOpacity: 1, opacity: 1,};
-            case 'rom': return {color: "#000000", fillOpacity: 0, opacity: 0.5,};
+    kikotohely = L.geoJSON(data, { pane: 'kikotohelypane',
+        style: function(feature) {
+            switch (feature.properties.tipus) {
+                case 'steg': return {color: "#CC99FF", fillOpacity: 1, opacity: 1,};
+                case 'ponton': return {color: "#F69BFD", fillOpacity: 1, opacity: 1,};
+                case 'magassteg': return {color: "#000000", fillColor: "#CC99FF", fillOpacity: 1, opacity: 0.5,};
+                case 'allohajo': return {color: "#7F6387", fillOpacity: 1, opacity: 1,};
+                case 'molo': return {color: "#D9D9D9", fillOpacity: 1, opacity: 1,};
+                case 'rom': return {color: "#000000", fillOpacity: 0, opacity: 0.5,};
+            }
         }
-    }
-})
-.addTo(map).bindTooltip(l=>displayName(l.feature.properties.tipus));
-retegkezelo.addOverlay(kikotohely, 'Kikötőhelyek');
+    })
+    .addTo(map).bindTooltip(l=>displayName(l.feature.properties.tipus));
+    retegkezelo.addOverlay(kikotohely, 'Kikötőhelyek');
 });
 
 //geoJSON réteg: Alappont
