@@ -712,7 +712,7 @@ This program is free software; you can redistribute it and/or modify it under th
 				<div style="line-height: 34px;" class="material-icons helykitolto">&#xe8b6;</div>
 				<div style="line-height: 34px; margin-left: 5px;" class="helykitolto">Keresés..</div>
 				
-				<input type="text" id="keresomezo" list="javaslatok" autocomplete="on"  onkeyup="if (event.keyCode==13) keress()" onchange="hint(this.value)" placeholder="Keresés.." name="keresomezo" value="">
+				<input type="text" id="keresomezo" list="javaslatok" autocomplete="on"  onkeyup="if (event.keyCode==13) keress()" onxchange="hint(this.value)" placeholder="Keresés.." name="keresomezo" value="">
 				<input type="button" id="keressgomb" onclick="javascript:keress()" class="material-icons" value="&#xe8b6;">
 				<datalist id="javaslatok" onchange="console.log(this.value)"></datalist>
 				
@@ -957,7 +957,7 @@ This program is free software; you can redistribute it and/or modify it under th
 				iconSize: [40, 40]
 			});	
 			
-			//Térképobjektum
+			//Térkép objektum
 			var map = L.map('terkep_helye',{
 				maxZoom: 20,
 				//maxBounds: [[47.479872, 18.936847],[46.992220, 19.136007]]
@@ -1136,30 +1136,39 @@ This program is free software; you can redistribute it and/or modify it under th
 			//geoJSON réteg: Poi
 			var poi,poidata;
 			fetch('layers/rsdPoi.geojson').then(r=>r.json()).then(function(data) {
-			poidata=data;
-            poi = L.geoJSON(data, {
-				pointToLayer: function(f,ll) {
-					return L.marker(ll,{icon: getIconPoi(f.properties.tipus)})
-				}
-			})
-			.bindPopup(function (layer)
-				{return String(
-					"<b>" + layer.feature.properties.nev + "</b>" + "<br>" +
-					(layer.feature.properties.nyitva?"Nyitvatartás: " + layer.feature.properties.nyitva + "<br>":"") +
-					(layer.feature.properties.telefon?"Telefonszám: " + layer.feature.properties.telefon + "<br>":"") +
-					(layer.feature.properties.email?"E-mail: " + layer.feature.properties.email + "<br>":"") +
-					(layer.feature.properties.web?"Weboldal: " + layer.feature.properties.web + "<br>":"") +
-					(layer.feature.properties.megjegyzes?"<span style='background-color:PaleTurquoise;'>" + layer.feature.properties.megjegyzes + "</span>":"")
-					)
-				},
-				//{permanent: false, opacity: 0.9}
-			)
-			.bindTooltip(function (layer)
-				{return String(layer.feature.properties.nev)},
-				{permanent: false, opacity: 0.9, direction: 'right'}
-			)
-			.addTo(map);
-			retegkezelo.addOverlay(poi, 'Helyek');
+                poidata=data;
+                poi = L.geoJSON(data, {
+                    pointToLayer: function(f,ll) {
+                        return L.marker(ll,{icon: getIconPoi(f.properties.tipus)})
+                    }
+                })
+                .bindPopup(function (layer)
+                    {return String(
+                        "<b>" + layer.feature.properties.nev + "</b>" + "<br>" +
+                        (layer.feature.properties.nyitva?"Nyitvatartás: " + layer.feature.properties.nyitva + "<br>":"") +
+                        (layer.feature.properties.telefon?"Telefonszám: " + layer.feature.properties.telefon + "<br>":"") +
+                        (layer.feature.properties.email?"E-mail: " + layer.feature.properties.email + "<br>":"") +
+                        (layer.feature.properties.web?"Weboldal: " + layer.feature.properties.web + "<br>":"") +
+                        (layer.feature.properties.megjegyzes?"<span style='background-color:PaleTurquoise;'>" + layer.feature.properties.megjegyzes + "</span>":"")
+                        )
+                    },
+                    //{permanent: false, opacity: 0.9}
+                )
+                .bindTooltip(function (layer)
+                    {return String(layer.feature.properties.nev)},
+                    {permanent: false, opacity: 0.9, direction: 'right'}
+                )
+                .addTo(map);
+                retegkezelo.addOverlay(poi, 'Helyek');
+                
+				var hintlist = document.getElementById('javaslatok');
+                var hintlayer = poi.getLayers();
+                hintlist.innerHTML='';
+                for (var i=0; i < hintlayer.length; i++) {
+                    var name = hintlayer[i].feature.properties['nev'];
+                    hintlist.innerHTML+='<option value="'+name+'"/>';
+                }
+				//console.log(poidata);
 			});		
 			
 			function getIconPoi(tipus) {
@@ -1329,10 +1338,10 @@ This program is free software; you can redistribute it and/or modify it under th
 
 			//A pont
 			function aPontLerakas(e) {
-				if (exit) {
-        		return;
-    			}
-				var location = e.latlng
+				if (exit) 
+                    return;
+    			
+				var location = e.latlng;
 				if (aPont == null) {
 					aPontVonalonKoord = L.GeometryUtil.closest(map, kozepvonal.getLayers()[0], location);
                     if (map.distance(aPontVonalonKoord,location)>200) {
@@ -1351,9 +1360,10 @@ This program is free software; you can redistribute it and/or modify it under th
 
 			function aPontKijeloles(e) {
 				if (exit) {
-        		return;
+                    return;
     			}
-				map.on('click', aPontLerakas);
+				vl.unbindPopup();
+                map.on('click', aPontLerakas);
 				document.getElementById('kezdopontcimke').style.display="block";
 				document.getElementById('xutvonaltervgomb').style.display="flex";
 				document.getElementById('utvonaltervgomb').style.display="none";
@@ -1363,17 +1373,23 @@ This program is free software; you can redistribute it and/or modify it under th
 			}
 
 			//B pont
-			var lefele
+			var lefele;
 			function bPontLerakas(e) {
-				map.off('click',bPontLerakas);
                 if (exit) {
-        		return;
+                    return;
     			}
 				var location = e.latlng
 				if (bPont == null) {
+					bPontVonalonKoord = L.GeometryUtil.closest(map, kozepvonal.getLayers()[0], location);
+                    if (map.distance(bPontVonalonKoord,location)>200) {
+                        alert('A pont túl messze van a vízparttól!');
+                        return;
+                    }
 					bPont = new L.marker(location).addTo(map);
-					bPontVonalon = new L.marker(L.GeometryUtil.closest(map, kozepvonal.getLayers()[0], location))//.addTo(map);
+					bPontVonalon = new L.marker(bPontVonalonKoord)//.addTo(map);
 				}
+				map.off('click',bPontLerakas);
+                vl.bindPopup(f=>'vízmélység '+f.properties.NAME+' m');
                 if (aPontVonalon.getLatLng().lat>bPontVonalon.getLatLng().lat) {
                     // A-B eszak-del
                     var kp=aPont.getLatLng(), kpv=aPontVonalon.getLatLng();
@@ -1694,13 +1710,6 @@ This program is free software; you can redistribute it and/or modify it under th
 
 			
 			function keress() {
-				var hintlist = document.getElementById('javaslatok');
-                var hintlayer = poi.getLayers();
-                for (var i=0; i < hintlayer.length; i++) {
-                    name = hintlayer[i].feature.properties['nev'];
-                    hintlist.innerHTML+='<option value="'+name+'"/>';
-                }
-				//console.log(poidata);
 
 				var talalat;
 				var talalatnev;
@@ -1724,7 +1733,7 @@ This program is free software; you can redistribute it and/or modify it under th
 				//console.log(talalatdoboz);
 			}
 
-			function hint(text) {
+			/*function hint(text) {
                 // finds all objects on layer group 'poi' containing 'text' in 'nev' attribute
                 // and puts names into 'hint' div
                 var hintlist = document.getElementById('javaslatok');
@@ -1737,7 +1746,7 @@ This program is free software; you can redistribute it and/or modify it under th
                         hintlist.innerHTML+='<div class="hint" onclick="setSearch(\''+name+'\');clearHints();">'+name+'</div>';
                     }
                 }
-            }
+            }*/
 
 			function keresstipust(data) {
 				
