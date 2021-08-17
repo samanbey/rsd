@@ -78,6 +78,9 @@ var tiloskikotniIkon = L.icon({
 var dName={
     limany: 'limány',
     
+    allohajo: 'állóhajó',
+    steg: 'stég',
+    
     nad: 'nád',
     sas: 'sás'
 }
@@ -167,6 +170,12 @@ var novenyzet = L.geoJSON(data, { pane: 'novenyzetpane',
         }
     }
 }).addTo(map).bindTooltip(l=>displayName(l.feature.properties.tipus));
+// TODO: tooltip a mutatónál nyíljon meg.
+/*novenyzet.eachLayer(function(l) {
+    l.on('mouseover',function(e){
+        e.target.setTooltip(displayName(l.feature.properties.tipus));
+    })
+});*/
 retegkezelo.addOverlay(novenyzet, 'Növényzet');
 });
 
